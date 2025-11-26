@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pyr33x/proxy/pkg/config"
+	"github.com/pyr33x/proxio/pkg/config"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )

@@ -52,9 +52,9 @@ func New() *Config {
 		},
 		Redis: Redis{
 			Base: Base{
-				Host:     envy.GetString("REDIS_HOST", "127.0.0.1"),
+				Host:     envy.GetString("REDIS_HOST", "proxio_redis"),
 				Port:     envy.GetString("REDIS_PORT", "6379"),
-				Username: envy.GetString("REDIS_USERNAME", "proxy"),
+				Username: envy.GetString("REDIS_USERNAME", "proxio"),
 				Password: envy.GetString("REDIS_PASSWORD", ""),
 			},
 			Database: envy.GetInt("REDIS_DATABASE", 0),

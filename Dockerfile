@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . ./
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/proxy main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/proxio main.go
 
 FROM alpine:latest
 
@@ -15,8 +15,8 @@ RUN apk add --no-cache ca-certificates
 
 WORKDIR /
 
-COPY --from=builder /app/proxy .
+COPY --from=builder /app/proxio .
 COPY --from=builder /app/.env .
 
 EXPOSE 1337
-ENTRYPOINT [ "/proxy" ]
+ENTRYPOINT [ "/proxio" ]

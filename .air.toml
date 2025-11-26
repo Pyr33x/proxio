@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "bin/proxy"
-  cmd = "go build -o bin/proxy ."
+  bin = "bin/proxio"
+  cmd = "go build -o bin/proxio ."
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []

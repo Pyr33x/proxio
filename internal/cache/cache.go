@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pyr33x/proxy/pkg/err"
+	"github.com/pyr33x/proxio/pkg/err"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )

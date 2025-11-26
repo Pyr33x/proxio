@@ -1,4 +1,4 @@
-module github.com/pyr33x/proxy
+module github.com/pyr33x/proxio
 
 go 1.25.4
 

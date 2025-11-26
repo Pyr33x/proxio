@@ -7,9 +7,9 @@ import (
 	"syscall"
 	"time"
 
-	zl "github.com/pyr33x/proxy/internal/adapter/zap"
-	"github.com/pyr33x/proxy/internal/proxy"
-	"github.com/pyr33x/proxy/pkg/config"
+	zl "github.com/pyr33x/proxio/internal/adapter/zap"
+	"github.com/pyr33x/proxio/internal/proxy"
+	"github.com/pyr33x/proxio/pkg/config"
 	"go.uber.org/zap"
 
 	_ "github.com/joho/godotenv/autoload"

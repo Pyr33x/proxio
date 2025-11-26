@@ -5,7 +5,7 @@ import (
 	"maps"
 	"net/http"
 
-	"github.com/pyr33x/proxy/internal/cache"
+	"github.com/pyr33x/proxio/internal/cache"
 	"go.uber.org/zap"
 )
 

@@ -1,6 +1,6 @@
-# Proxy
+# Proxio
 
-**Proxy** is a simple caching proxy created in my free time. It focuses on speed and simplicity.
+**Proxio** is a simple caching proxy created in my free time. It focuses on speed and simplicity.
 
 ## Features
 
@@ -11,9 +11,9 @@
 ## Installation
 
 ```bash
-git clone https://github.com/pyr33x/proxy.git
-cd proxy
-go build -o proxy
+git clone https://github.com/pyr33x/proxio.git
+cd proxio
+go build -o proxio
 ```
 
 ## Usage
@@ -29,28 +29,28 @@ You can set environment variables to configure the proxy before running it.
 | `ZAP_ENV`        | Logging environment (dev/prod)     | `dev`                  |
 | `REDIS_HOST`     | Redis server host                  | `127.0.0.1`            |
 | `REDIS_PORT`     | Redis server port                  | `6379`                 |
-| `REDIS_USERNAME` | Redis username                     | `proxy`                |
+| `REDIS_USERNAME` | Redis username                     | `proxio`                |
 | `REDIS_PASSWORD` | Redis password                     | *(empty)*              |
 | `REDIS_DATABASE` | Redis database number              | `0`                    |
 
-## Run Proxy
+## Run Proxio
 
 ```bash
 # Run with default environment variables
-./proxy
+./proxio
 
 # Or set custom variables inline
-ORIGIN_URL="http://example.com" PROXY_PORT="8080" ./proxy
+ORIGIN_URL="http://example.com" PROXY_PORT="8080" ./proxio
 ```
 Cached responses will be stored in Redis and served quickly on repeated requests.
 
 ## Docker
-You can also run Proxy using Docker.
+You can also run Proxio using Docker.
 
 ### Build and Run
 ```bash
 # Build the Docker image
-docker build -t proxy .
+docker build -t proxio .
 
 # Run the container
 docker run -d \
@@ -58,17 +58,17 @@ docker run -d \
   -e PROXY_PORT="8080" \
   -e REDIS_HOST="redis" \
   -p 8080:8080 \
-  proxy
+  proxio
 ```
 
 ## Pull from Docker Hub
 ```bash
-docker pull pyr33x/proxy:latest
-docker run -d -p 8080:8080 pyr33x/proxy:latest
+docker pull me3di/proxio:latest
+docker run -d -p 8080:8080 me3di/proxio:latest
 ```
 
 ## Docker Compose
-If you have Docker Compose, you can spin up Proxy with Redis easily.
+If you have Docker Compose, you can spin up Proxio with Redis easily.
 Run with:
 ```bash
 docker compose up -d --build

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pyr33x/proxy/internal/adapter/redis"
-	"github.com/pyr33x/proxy/internal/cache"
-	"github.com/pyr33x/proxy/pkg/config"
+	"github.com/pyr33x/proxio/internal/adapter/redis"
+	"github.com/pyr33x/proxio/internal/cache"
+	"github.com/pyr33x/proxio/pkg/config"
 	"go.uber.org/zap"
 )
 
