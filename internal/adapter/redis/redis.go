@@ -29,3 +29,7 @@ func New(ctx context.Context, cfg *config.Redis, logger *zap.Logger) *Adapter {
 	logger.Info("attached redis", zap.String("state", "connected"))
 	return &Adapter{rdb: rdb}
 }
+
+func (a *Adapter) GetClient() *redis.Client {
+	return a.rdb
+}
