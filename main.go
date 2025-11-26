@@ -11,6 +11,8 @@ import (
 	"github.com/pyr33x/proxy/internal/proxy"
 	"github.com/pyr33x/proxy/pkg/config"
 	"go.uber.org/zap"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func gracefulShutdown(cancel context.CancelFunc, logger *zap.Logger, proxy *http.Server, done chan struct{}) {
