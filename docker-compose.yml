@@ -1,0 +1,29 @@
+services:
+  proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "1337:1337"
+    depends_on:
+      - proxy_redis
+    networks:
+      - proxy-network
+      - shared-net
+
+  proxy_redis:
+    image: redis:8-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis_volume:/data
+    networks:
+      - proxy-network
+
+networks:
+  proxy-network:
+    driver: bridge
+  shared-net:
+    external: true
