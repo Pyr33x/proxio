@@ -20,7 +20,7 @@ type Caching interface {
 
 type Cache struct {
 	rdb        *redis.Client
-	sugar      *zap.SugaredLogger
+	logger     *zap.Logger
 	expiration time.Duration
 }
 
@@ -33,39 +33,32 @@ type CacheValue struct {
 func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *Cache {
 	return &Cache{
 		rdb:        rdb,
-		sugar:      logger.Sugar(),
+		logger:     logger,
 		expiration: 60 * time.Second,
 	}
 }
 
 func (c *Cache) Get(ctx context.Context, key string) (*CacheValue, bool) {
 	if key == "" {
-		c.sugar.Warn("attempted to get cache with empty key")
+		c.logger.Warn("attempted to get cache with empty key")
 		return nil, false
 	}
 
 	raw, err := c.rdb.Get(ctx, key).Bytes()
 	if err != nil {
-		if err == redis.Nil {
-			c.sugar.Warn("cache miss",
-				"key", key,
-			)
-			return nil, false
-		}
-
-		c.sugar.Error("failed to read from cache",
-			"key", key,
-			"error", err,
+		c.logger.Info("cache miss",
+			zap.String("key", key),
+			zap.String("state", "MISS"),
 		)
 		return nil, false
 	}
 
-	var val *CacheValue
+	var val CacheValue
 	if err := json.Unmarshal(raw, &val); err != nil {
 		return nil, false
 	}
 
-	return val, true
+	return &val, true
 }
 
 func (c *Cache) Put(ctx context.Context, key string, value CacheValue) error {
@@ -75,20 +68,20 @@ func (c *Cache) Put(ctx context.Context, key string, value CacheValue) error {
 
 	b, err := json.Marshal(value)
 	if err != nil {
-		c.sugar.Info("failed to marshal value",
-			"key", key,
-			"value", value,
-			"error", err,
+		c.logger.Info("failed to marshal value",
+			zap.String("key", key),
+			zap.Any("value", value),
+			zap.Error(err),
 		)
 		return err
 	}
 
 	err = c.rdb.Set(ctx, key, b, c.expiration).Err()
 	if err != nil {
-		c.sugar.Error("failed to write to cache",
-			"key", key,
-			"expiration", c.expiration,
-			"error", err,
+		c.logger.Error("failed to write to cache",
+			zap.String("key", key),
+			zap.Duration("expiration", c.expiration),
+			zap.Error(err),
 		)
 		return fmt.Errorf("cache put failed: %w", err)
 	}
