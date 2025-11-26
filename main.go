@@ -15,7 +15,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-func gracefulShutdown(cancel context.CancelFunc, logger *zap.Logger, proxy *http.Server, done chan struct{}) {
+func gracefulShutdown(logger *zap.Logger, proxy *http.Server, done chan struct{}) {
 	stopCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -29,6 +29,7 @@ func gracefulShutdown(cancel context.CancelFunc, logger *zap.Logger, proxy *http
 		logger.Error("failed to shutdown proxy server",
 			zap.Error(err),
 		)
+		return
 	}
 
 	logger.Info("exiting proxy...")
@@ -36,16 +37,13 @@ func gracefulShutdown(cancel context.CancelFunc, logger *zap.Logger, proxy *http
 }
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-
 	done := make(chan struct{})
 
 	cfg := config.New()
 	logger := zl.New(cfg.Zap.Environment).GetLogger()
+	proxy := proxy.NewProxyServer(context.Background(), cfg, logger)
 
-	proxy := proxy.NewProxyServer(ctx, cfg, logger)
-
-	go gracefulShutdown(cancel, logger, proxy, done)
+	go gracefulShutdown(logger, proxy, done)
 
 	logger.Info("attached proxy",
 		zap.String("bind", proxy.Addr),

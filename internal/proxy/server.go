@@ -45,7 +45,7 @@ func (srv *Server) ServeProxy(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error forwarding request", http.StatusInternalServerError)
 		return
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -78,8 +78,14 @@ func (srv *Server) Clear(w http.ResponseWriter, r *http.Request) {
 		srv.logger.Error("failed to clear cache")
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("cleaned proxy cache"))
+	if _, err := w.Write([]byte("cleaned proxy cache")); err != nil {
+		srv.logger.Error("failed to write proxy cache clean response",
+			zap.Error(err),
+		)
+		return
+	}
 }
 
 func (srv *Server) WriteHeaders(w http.ResponseWriter, state string, cached *cache.CacheValue) {
