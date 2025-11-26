@@ -2,10 +2,10 @@ package cache
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
+	"github.com/pyr33x/proxy/pkg/err"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
@@ -56,7 +56,7 @@ func (c *cache) Get(ctx context.Context, key string) (string, bool) {
 
 func (c *cache) Put(ctx context.Context, key string, value any) error {
 	if key == "" {
-		return errors.New("cache key cannot be empty")
+		return err.ErrEmptyCacheKey
 	}
 
 	err := c.rdb.Set(ctx, key, value, c.expiration).Err()
