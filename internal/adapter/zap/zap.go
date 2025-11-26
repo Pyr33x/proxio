@@ -3,7 +3,7 @@ package zap
 import "go.uber.org/zap"
 
 type Adapter struct {
-	Logger *zap.Logger
+	logger *zap.Logger
 }
 
 func New(environment string) *Adapter {
@@ -12,14 +12,14 @@ func New(environment string) *Adapter {
 		if fallback, fallbackErr := zap.NewDevelopment(); fallbackErr == nil {
 			fallback.Error("failed to create configured logger, using development fallback",
 				zap.Error(err))
-			return &Adapter{Logger: fallback}
+			return &Adapter{logger: fallback}
 		}
 
 		println("CRITICAL: failed to create any logger:", err.Error())
 		return nil
 	}
 
-	return &Adapter{Logger: logger}
+	return &Adapter{logger: logger}
 }
 
 func createLogger(environment string) (*zap.Logger, error) {
@@ -33,4 +33,8 @@ func createLogger(environment string) (*zap.Logger, error) {
 	default:
 		return zap.NewDevelopment()
 	}
+}
+
+func (a *Adapter) GetLogger() *zap.Logger {
+	return a.logger
 }
