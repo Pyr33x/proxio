@@ -1,3 +1,3 @@
-package proxy
+package main
 
 func main() {}
