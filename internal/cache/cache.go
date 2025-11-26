@@ -2,7 +2,9 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/pyr33x/proxy/pkg/err"
@@ -10,64 +12,83 @@ import (
 	"go.uber.org/zap"
 )
 
-type Cache interface {
+type Caching interface {
 	Get(ctx context.Context, key string) string
 	Put(ctx context.Context, key string, value any) error
+	Clear(ctx context.Context) error
 }
 
-type cache struct {
+type Cache struct {
 	rdb        *redis.Client
-	sugar      *zap.SugaredLogger
+	logger     *zap.Logger
 	expiration time.Duration
 }
 
-func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *cache {
-	return &cache{
+type CacheValue struct {
+	Status int
+	Header http.Header
+	Body   []byte
+}
+
+func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *Cache {
+	return &Cache{
 		rdb:        rdb,
-		sugar:      logger.Sugar(),
+		logger:     logger,
 		expiration: 60 * time.Second,
 	}
 }
 
-func (c *cache) Get(ctx context.Context, key string) (string, bool) {
+func (c *Cache) Get(ctx context.Context, key string) (*CacheValue, bool) {
 	if key == "" {
-		c.sugar.Warn("attempted to get cache with empty key")
-		return "", false
+		c.logger.Warn("attempted to get cache with empty key")
+		return nil, false
 	}
 
-	res, err := c.rdb.Get(ctx, key).Result()
+	raw, err := c.rdb.Get(ctx, key).Bytes()
 	if err != nil {
-		if err == redis.Nil {
-			c.sugar.Warn("cache miss",
-				"key", key,
-			)
-			return "", false
-		}
-
-		c.sugar.Error("failed to read from cache",
-			"key", key,
-			"error", err,
+		c.logger.Info("cache miss",
+			zap.String("key", key),
+			zap.String("state", "MISS"),
 		)
-		return "", false
+		return nil, false
 	}
 
-	return res, true
+	var val CacheValue
+	if err := json.Unmarshal(raw, &val); err != nil {
+		return nil, false
+	}
+
+	return &val, true
 }
 
-func (c *cache) Put(ctx context.Context, key string, value any) error {
+func (c *Cache) Put(ctx context.Context, key string, value CacheValue) error {
 	if key == "" {
 		return err.ErrEmptyCacheKey
 	}
 
-	err := c.rdb.Set(ctx, key, value, c.expiration).Err()
+	b, err := json.Marshal(value)
 	if err != nil {
-		c.sugar.Error("failed to write to cache",
-			"key", key,
-			"expiration", c.expiration,
-			"error", err,
+		c.logger.Info("failed to marshal value",
+			zap.String("key", key),
+			zap.Any("value", value),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	err = c.rdb.Set(ctx, key, b, c.expiration).Err()
+	if err != nil {
+		c.logger.Error("failed to write to cache",
+			zap.String("key", key),
+			zap.Duration("expiration", c.expiration),
+			zap.Error(err),
 		)
 		return fmt.Errorf("cache put failed: %w", err)
 	}
 
 	return nil
+}
+
+func (c *Cache) Clear(ctx context.Context) error {
+	return c.rdb.FlushAll(ctx).Err()
 }
