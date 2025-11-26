@@ -1,12 +1,13 @@
 package proxy
 
 import (
+	"context"
 	"net/http"
 	"time"
 
+	"github.com/pyr33x/proxy/internal/adapter/redis"
 	"github.com/pyr33x/proxy/internal/cache"
 	"github.com/pyr33x/proxy/pkg/config"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -25,13 +26,15 @@ type OriginServer struct {
 	URL string
 }
 
-func NewProxyServer(cfg *config.Server, rdb *redis.Client, logger *zap.Logger) *http.Server {
+func NewProxyServer(ctx context.Context, cfg *config.Config, logger *zap.Logger) *http.Server {
+	rdb := redis.New(ctx, &cfg.Redis, logger).GetClient()
+
 	srv := &Server{
 		Proxy: ProxyServer{
-			Port: cfg.Proxy.Port,
+			Port: cfg.Server.Proxy.Port,
 		},
 		Origin: OriginServer{
-			URL: cfg.Origin.URL,
+			URL: cfg.Server.Origin.URL,
 		},
 		Cache:  cache.NewCacheRepository(rdb, logger),
 		logger: logger,
