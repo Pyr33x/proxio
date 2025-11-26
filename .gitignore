@@ -9,3 +9,6 @@
 
 # volumes
 /redis_volume
+
+# Added by goreleaser init:
+dist/
