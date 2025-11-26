@@ -12,11 +12,13 @@ import (
 func (srv *Server) Serve() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", srv.ServeProxy)
+	mux.HandleFunc("/clear", srv.Clear)
 	return mux
 }
 
 func (srv *Server) ServeProxy(w http.ResponseWriter, r *http.Request) {
 	cacheKey := r.Method + ":" + r.URL.String()
+	originURL := srv.Origin.URL + r.URL.String()
 
 	c, ok := srv.Cache.Get(r.Context(), cacheKey)
 	if ok {
@@ -25,10 +27,15 @@ func (srv *Server) ServeProxy(w http.ResponseWriter, r *http.Request) {
 			zap.String("key", cacheKey),
 			zap.String("state", "HIT"),
 		)
+		srv.logger.Info("forwarding",
+			zap.String("origin", originURL),
+		)
 		return
 	}
 
-	originURL := srv.Origin.URL + r.URL.String()
+	srv.logger.Info("forwarding",
+		zap.String("origin", originURL),
+	)
 	resp, err := http.Get(originURL)
 	if err != nil {
 		srv.logger.Error("error forwarding request",
@@ -62,7 +69,17 @@ func (srv *Server) ServeProxy(w http.ResponseWriter, r *http.Request) {
 			zap.String("key", cacheKey),
 		)
 	}
+
 	srv.WriteHeaders(w, "MISS", &cached)
+}
+
+func (srv *Server) Clear(w http.ResponseWriter, r *http.Request) {
+	if err := srv.Cache.Clear(r.Context()); err != nil {
+		srv.logger.Error("failed to clear cache")
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("cleaned proxy cache"))
 }
 
 func (srv *Server) WriteHeaders(w http.ResponseWriter, state string, cached *cache.CacheValue) {
