@@ -10,26 +10,27 @@ import (
 	"go.uber.org/zap"
 )
 
-type Cache interface {
+type Caching interface {
 	Get(ctx context.Context, key string) string
 	Put(ctx context.Context, key string, value any) error
+	Clear(ctx context.Context) error
 }
 
-type cache struct {
+type Cache struct {
 	rdb        *redis.Client
 	sugar      *zap.SugaredLogger
 	expiration time.Duration
 }
 
-func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *cache {
-	return &cache{
+func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *Cache {
+	return &Cache{
 		rdb:        rdb,
 		sugar:      logger.Sugar(),
 		expiration: 60 * time.Second,
 	}
 }
 
-func (c *cache) Get(ctx context.Context, key string) (string, bool) {
+func (c *Cache) Get(ctx context.Context, key string) (string, bool) {
 	if key == "" {
 		c.sugar.Warn("attempted to get cache with empty key")
 		return "", false
@@ -54,7 +55,7 @@ func (c *cache) Get(ctx context.Context, key string) (string, bool) {
 	return res, true
 }
 
-func (c *cache) Put(ctx context.Context, key string, value any) error {
+func (c *Cache) Put(ctx context.Context, key string, value any) error {
 	if key == "" {
 		return err.ErrEmptyCacheKey
 	}
@@ -70,4 +71,8 @@ func (c *cache) Put(ctx context.Context, key string, value any) error {
 	}
 
 	return nil
+}
+
+func (c *Cache) Clear(ctx context.Context) error {
+	return c.rdb.FlushAll(ctx).Err()
 }
