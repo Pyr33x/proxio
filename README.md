@@ -27,7 +27,7 @@ You can set environment variables to configure the proxy before running it.
 | `ORIGIN_URL`     | The origin server URL to proxy       | `http://dummyjson.com` |
 | `PROXY_PORT`     | Port for the proxy server to listen | `1337`                 |
 | `ZAP_ENV`        | Logging environment (dev/prod)     | `dev`                  |
-| `REDIS_HOST`     | Redis server host                  | `127.0.0.1`            |
+| `REDIS_HOST`     | Redis server host                  | `redis_proxio`            |
 | `REDIS_PORT`     | Redis server port                  | `6379`                 |
 | `REDIS_USERNAME` | Redis username                     | `proxio`                |
 | `REDIS_PASSWORD` | Redis password                     | *(empty)*              |
