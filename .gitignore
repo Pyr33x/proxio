@@ -3,3 +3,6 @@
 
 # temp
 /tmp
+
+# env
+*.env
