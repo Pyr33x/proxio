@@ -1,0 +1,8 @@
+# binary
+/bin
+
+# temp
+/tmp
+
+# env
+*.env
