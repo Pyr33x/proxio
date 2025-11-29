@@ -61,10 +61,19 @@ docker run -d \
   proxio
 ```
 
-## Pull from Docker Hub
+## Using Docker
 ```bash
+# Pull from Docker Hub
 docker pull me3di/proxio:latest
-docker run -d -p 8080:8080 me3di/proxio:latest
+
+# Pull from GitHub Container Registry (GHCR)
+docker pull ghcr.io/pyr33x/proxio:latest
+
+# Or build locally
+docker build -t proxio .
+
+# Run with Docker
+docker run -d -p 8080:8080 ghcr.io/pyr33x/proxio:latest
 ```
 
 ## Docker Compose
