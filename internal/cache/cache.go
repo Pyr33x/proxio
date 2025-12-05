@@ -52,6 +52,12 @@ func (c *Cache) Get(ctx context.Context, key string) (*CacheValue, bool) {
 		return nil, false
 	}
 
+	// raw is nil (key doesn't exist)
+	if raw == nil {
+		c.logger.Info("cache miss", zap.String("key", key), zap.String("state", "MISS"))
+		return nil, false
+	}
+
 	var val CacheValue
 	if err := json.Unmarshal(raw, &val); err != nil {
 		return nil, false
