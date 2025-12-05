@@ -50,6 +50,9 @@ func (m *memoryStore) Set(ctx context.Context, key string, value []byte, ttl tim
 }
 
 func (m *memoryStore) Clear(ctx context.Context) error {
-	m.data = sync.Map{}
+	m.data.Range(func(key, _ any) bool {
+		m.data.Delete(key)
+		return true
+	})
 	return nil
 }

@@ -30,10 +30,14 @@ func NewProxyServer(ctx context.Context, cfg *config.Config, logger *zap.Logger)
 	var cacheStorage cache.Store
 
 	if cfg.Server.Proxy.Cache == "redis" {
-		rdb := redis.New(ctx, &cfg.Redis, logger).GetClient()
-		cacheStorage = cache.NewRedisStore(rdb)
+		adapter := redis.New(ctx, &cfg.Redis, logger).GetClient()
+		if adapter == nil {
+			logger.Warn("failed to connect to redis, falling back to memory store")
+			cacheStorage = cache.NewMemoryStore()
+		}
+	} else {
+		cacheStorage = cache.NewMemoryStore()
 	}
-	cacheStorage = cache.NewMemoryStore()
 
 	srv := &Server{
 		Proxy: ProxyServer{

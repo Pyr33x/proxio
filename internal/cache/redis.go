@@ -24,5 +24,5 @@ func (r *redisStore) Set(ctx context.Context, key string, value []byte, ttl time
 }
 
 func (r *redisStore) Clear(ctx context.Context) error {
-	return r.client.FlushAll(ctx).Err()
+	return r.client.FlushDB(ctx).Err()
 }
