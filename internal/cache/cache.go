@@ -8,18 +8,17 @@ import (
 	"time"
 
 	"github.com/pyr33x/proxio/pkg/err"
-	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
-type Caching interface {
-	Get(ctx context.Context, key string) string
-	Put(ctx context.Context, key string, value any) error
+type Store interface {
+	Get(ctx context.Context, key string) ([]byte, error)
+	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
 	Clear(ctx context.Context) error
 }
 
 type Cache struct {
-	rdb        *redis.Client
+	store      Store
 	logger     *zap.Logger
 	expiration time.Duration
 }
@@ -30,11 +29,11 @@ type CacheValue struct {
 	Body   []byte
 }
 
-func NewCacheRepository(rdb *redis.Client, logger *zap.Logger) *Cache {
+func NewCacheRepository(store Store, logger *zap.Logger, ttl time.Duration) *Cache {
 	return &Cache{
-		rdb:        rdb,
+		store:      store,
 		logger:     logger,
-		expiration: 60 * time.Second,
+		expiration: ttl,
 	}
 }
 
@@ -44,12 +43,18 @@ func (c *Cache) Get(ctx context.Context, key string) (*CacheValue, bool) {
 		return nil, false
 	}
 
-	raw, err := c.rdb.Get(ctx, key).Bytes()
+	raw, err := c.store.Get(ctx, key)
 	if err != nil {
 		c.logger.Info("cache miss",
 			zap.String("key", key),
 			zap.String("state", "MISS"),
 		)
+		return nil, false
+	}
+
+	// raw is nil (key doesn't exist)
+	if raw == nil {
+		c.logger.Info("cache miss", zap.String("key", key), zap.String("state", "MISS"))
 		return nil, false
 	}
 
@@ -76,8 +81,7 @@ func (c *Cache) Put(ctx context.Context, key string, value CacheValue) error {
 		return err
 	}
 
-	err = c.rdb.Set(ctx, key, b, c.expiration).Err()
-	if err != nil {
+	if err := c.store.Set(ctx, key, b, c.expiration); err != nil {
 		c.logger.Error("failed to write to cache",
 			zap.String("key", key),
 			zap.Duration("expiration", c.expiration),
@@ -90,5 +94,5 @@ func (c *Cache) Put(ctx context.Context, key string, value CacheValue) error {
 }
 
 func (c *Cache) Clear(ctx context.Context) error {
-	return c.rdb.FlushAll(ctx).Err()
+	return c.store.Clear(ctx)
 }

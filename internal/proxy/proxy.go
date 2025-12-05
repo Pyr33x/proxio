@@ -27,7 +27,19 @@ type OriginServer struct {
 }
 
 func NewProxyServer(ctx context.Context, cfg *config.Config, logger *zap.Logger) *http.Server {
-	rdb := redis.New(ctx, &cfg.Redis, logger).GetClient()
+	var cacheStorage cache.Store
+
+	if cfg.Server.Proxy.Cache == "redis" {
+		adapter := redis.New(ctx, &cfg.Redis, logger)
+		if adapter == nil {
+			logger.Warn("failed to connect to redis, falling back to memory store")
+			cacheStorage = cache.NewMemoryStore()
+		} else {
+			cacheStorage = cache.NewRedisStore(adapter.GetClient())
+		}
+	} else {
+		cacheStorage = cache.NewMemoryStore()
+	}
 
 	srv := &Server{
 		Proxy: ProxyServer{
@@ -36,7 +48,7 @@ func NewProxyServer(ctx context.Context, cfg *config.Config, logger *zap.Logger)
 		Origin: OriginServer{
 			URL: cfg.Server.Origin.URL,
 		},
-		Cache:  cache.NewCacheRepository(rdb, logger),
+		Cache:  cache.NewCacheRepository(cacheStorage, logger, time.Duration(cfg.Server.Proxy.TTL)*time.Second),
 		logger: logger,
 	}
 

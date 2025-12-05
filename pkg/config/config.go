@@ -18,7 +18,9 @@ type Origin struct {
 }
 
 type Proxy struct {
-	Port string
+	Port  string
+	Cache string
+	TTL   int64
 }
 
 type Zap struct {
@@ -44,7 +46,9 @@ func New() *Config {
 				URL: envy.GetString("ORIGIN_URL", "http://dummyjson.com"),
 			},
 			Proxy: Proxy{
-				Port: envy.GetString("PROXY_PORT", "1337"),
+				Port:  envy.GetString("PROXY_PORT", "1337"),
+				Cache: envy.GetString("PROXY_CACHE", "memory"),
+				TTL:   envy.GetInt64("PROXY_TTL", 60), // in seconds
 			},
 		},
 		Zap: Zap{
