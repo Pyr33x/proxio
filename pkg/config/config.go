@@ -19,6 +19,7 @@ type Origin struct {
 
 type Proxy struct {
 	Port string
+	TTL  int64
 }
 
 type Zap struct {
@@ -45,6 +46,7 @@ func New() *Config {
 			},
 			Proxy: Proxy{
 				Port: envy.GetString("PROXY_PORT", "1337"),
+				TTL:  envy.GetInt64("PROXY_TTL", 60), // in seconds
 			},
 		},
 		Zap: Zap{

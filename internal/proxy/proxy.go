@@ -37,7 +37,7 @@ func NewProxyServer(ctx context.Context, cfg *config.Config, logger *zap.Logger)
 		Origin: OriginServer{
 			URL: cfg.Server.Origin.URL,
 		},
-		Cache:  cache.NewCacheRepository(rdbCache, logger, 60*time.Second),
+		Cache:  cache.NewCacheRepository(rdbCache, logger, time.Duration(cfg.Server.Proxy.TTL)*time.Second),
 		logger: logger,
 	}
 
