@@ -107,5 +107,8 @@ If `PROXY_CACHE=memory`, Redis won't be used even if it’s running.
 ## Contributing
 Feel free to open issues or submit pull requests. Any help is appreciated!
 
+## References
+- [Roadmap](https://roadmap.sh/projects/caching-server)
+
 ## License
 MIT @ Mehdi Parandak
