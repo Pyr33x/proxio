@@ -11,6 +11,8 @@ services:
     networks:
       - proxio-network
       - shared-net
+    env_file:
+      - .env
 
   proxio_redis:
     image: redis:8-alpine
